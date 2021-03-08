@@ -1,0 +1,77 @@
+#!/bin/python3
+#   Programa que cria um servidor http na pasta atual e gera um QR Code para o link na rede.
+#   Autor: Arthur Novais
+#
+
+# server.py
+import qrcode_terminal as qr
+import netifaces as ni
+import argparse
+import sys
+import os
+
+
+class Server:
+    def __init__(self, path, port):
+        self.path = path
+        self.ip = ni.ifaddresses('eno1')[ni.AF_INET][0]['addr']
+        self.server = "http://"+self.ip+":"+str(port)
+        self.srv = "python3 -m http.server " + str(port)
+
+
+    def run(self):
+        print('entered here')
+        try:
+            command = self.srv + " -d " + str(self.path)
+
+            print("A server was opened in ", self.srv)
+            print("Sharing files from ", self.path)
+
+            qr.draw(self.server)
+            os.system(command)
+
+        except Exception as e:
+            print("Error" + e)
+
+def main():
+
+    parser = argparse.ArgumentParser(
+        description="App developed to open a local server o a designed folder",
+        usage="%(prog)s [-f] [-p]",
+    )
+    parser.add_argument(
+        "-f",
+        "--path",
+        type=str,
+        metavar="",
+        help="The path to the folder",
+    )
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=str,
+        metavar="",
+        help="Set a port to run the server",
+    )
+
+
+    args = parser.parse_args()
+
+    # Saving default values
+    path = os.path.abspath(os.getcwd())
+    port = 9000
+
+    # Setting command-line options
+    if (args.path):
+        path = args.path
+    if (args.port):
+        port = args.port
+    print(path)
+
+    localServer = Server(path,port)
+
+    localServer.run()
+    print(path)
+
+if __name__ == "__main__":
+    main()
